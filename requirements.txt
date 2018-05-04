@@ -1,0 +1,9 @@
+HAP-python==2.0.0
+git+https://github.com/adafruit/Adafruit_Python_BMP.git@4e89e324f438d23354efd2d5e82cd793fe408208
+requests==2.18.4
+colorutils==0.2.1
+addict==2.1.2
+pydash==4.5.0
+hues==0.2.2
+ipython==6.3.1
+pyserial==3.4
