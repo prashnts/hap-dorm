@@ -1,6 +1,6 @@
 # HAP Dorm
 
-My setup for running an Apple Homekit service on Arduino.
+My setup for running an Apple Homekit service on Raspberry Pi Zero W.
 
 While most stuff here are very specific to the setup in my dorm, it can be
 useful for others trying to set up similar service.
