@@ -25,9 +25,9 @@ class IrRemote:
     self.pins = pins
 
   def trigger(self, pin):
-    pin.on()
-    sleep(1)
     pin.off()
+    sleep(1)
+    pin.on()
 
   def trigger_pow(self):
     self.trigger(self.pins.pow)
