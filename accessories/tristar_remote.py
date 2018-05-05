@@ -33,7 +33,11 @@ class IrRemote:
     self.trigger(self.pins.pow)
 
   def shut_down(self):
-    self.pins.pow.off()
-    self.pins.osc.off()
-    self.pins.spd.off()
-    self.pins.vcc.off()
+    self.pins.pow.on()
+    self.pins.osc.on()
+    self.pins.spd.on()
+    self.pins.vcc.on()
+    self.pins.pow.close()
+    self.pins.osc.close()
+    self.pins.spd.close()
+    self.pins.vcc.close()
