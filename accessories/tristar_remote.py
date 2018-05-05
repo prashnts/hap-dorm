@@ -9,7 +9,7 @@ PIN_MAP = AttrDict({
   'POW': 25,    # 6 in wiringpi
 })
 
-gpio_pin = lambda x: GPIO(x, active_high=False, initial_value=True)
+gpio_pin = lambda x: GPIO(x, active_high=True, initial_value=True)
 
 
 class IrRemote:
@@ -26,7 +26,7 @@ class IrRemote:
 
   def trigger(self, pin):
     pin.on()
-    sleep(1000)
+    sleep(1)
     pin.off()
 
   def trigger_pow(self):
