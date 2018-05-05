@@ -1,6 +1,11 @@
+import logging
+
 from gpiozero import LED as GPIO
 from time import sleep
 from addict import Dict as AttrDict
+from pyhap.accessory import AsyncAccessory
+from pyhap.const import CATEGORY_FAN
+
 
 PIN_MAP = AttrDict({
   'VCC': 22,    # 3 in wiringpi
@@ -41,3 +46,29 @@ class IrRemote:
     self.pins.osc.close()
     self.pins.spd.close()
     self.pins.vcc.close()
+
+
+class TristarFan(AsyncAccessory):
+  category = CATEGORY_FAN
+
+  def __init__(self, *args, **kwargs):
+    super().__init__(*args, **kwargs)
+
+    self.set_info_service(
+      firmware_revision='v1.0',
+      manufacturer='noop.pw',
+      model='pw.noop.hap.tristar_ir',
+      serial_number='42-AC-TRISTARIR')
+
+    serv_fan = self.add_preload_service('Fanv2', chars=['Active', 'SwingMode'])
+
+    self.char_active = serv_fan.configure_char('Active', setter_callback=self.toggle_power, value=0)
+    self.char_swing = serv_fan.configure_char('SwingMode', setter_callback=self.toggle_swing, value=0)
+
+    self.remote = IrRemote()
+
+  def toggle_power(self, active):
+    self.remote.trigger(self.remote.pins.pow)
+
+  def toggle_swing(self, active):
+    self.remote.trigger(self.remote.pins.osc)

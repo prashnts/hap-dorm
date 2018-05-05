@@ -5,7 +5,7 @@ from pyhap.accessory import Bridge
 from pyhap.accessory_driver import AccessoryDriver
 import pyhap.loader as loader
 
-from accessories import BMP180Sensor, LEDStrands
+from accessories import BMP180Sensor, LEDStrands, TristarFan
 
 logging.basicConfig(level=logging.INFO)
 
@@ -13,6 +13,7 @@ logging.basicConfig(level=logging.INFO)
 bridge = Bridge(display_name='Dorm HAP Bridge')
 bridge.add_accessory(BMP180Sensor('Temperature'))
 bridge.add_accessory(LEDStrands('Strands'))
+bridge.add_accessory(TristarFan('Fan'))
 bridge.set_info_service(
   firmware_revision='v1.5',
   manufacturer='noop.pw',
