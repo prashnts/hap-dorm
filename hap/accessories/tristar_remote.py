@@ -1,20 +1,13 @@
 import logging
 
-from gpiozero import LED as GPIO
-from time import sleep
 from addict import Dict as AttrDict
+from enum import Enum
+from gpiozero import LED as GPIO
 from pyhap.accessory import AsyncAccessory
 from pyhap.const import CATEGORY_FAN
-from itertools import cycle
-from enum import Enum
+from time import sleep
 
-
-PIN_MAP = AttrDict({
-  'VCC': 22,    # 3 in wiringpi
-  'SPD': 23,    # 4 in wiringpi
-  'OSC': 24,    # 5 in wiringpi
-  'POW': 25,    # 6 in wiringpi
-})
+from hap import config
 
 
 gpio_pin = lambda x: GPIO(x, active_high=True, initial_value=True)
@@ -61,42 +54,45 @@ class FanSpeed(Enum):
 
 
 class IrRemote:
-  def __init__(self):
-    self._setup_pins()
-    self.state = AttrDict({
-      'power': ActiveState.off,
-      'swing': ActiveState.off,
-      'speed': FanSpeed.low,
-    })
+  def __init__(self, props=None):
+    self.pins = self._setup_pins()
+
+    self.state = AttrDict(
+      power=ActiveState.off,
+      swing=ActiveState.off,
+      speed=FanSpeed.low)
+
+    if props:
+      self.state.power = ActiveState.from_value(props.active.value)
+      self.state.swing = ActiveState.from_value(props.swing.value)
+      self.state.speed = ActiveState.from_value(props.speed.value)
 
   def _setup_pins(self):
-    pins = AttrDict()
-    pins.vcc = gpio_pin(PIN_MAP.VCC)
-    pins.pow = gpio_pin(PIN_MAP.POW)
-    pins.osc = gpio_pin(PIN_MAP.OSC)
-    pins.spd = gpio_pin(PIN_MAP.SPD)
-    self.pins = pins
+    pin_map = config.fan_remote.pin_map
+    return AttrDict(
+      vcc=gpio_pin(pin_map.VCC),
+      pow=gpio_pin(pin_map.POW),
+      osc=gpio_pin(pin_map.OSC),
+      spd=gpio_pin(pin_map.SPD))
 
   def __exit__(self, *args, **kwargs):
     self.pins.vcc.off()
     sleep(0.1)
-    self.pins.pow.off()
-    self.pins.osc.off()
-    self.pins.spd.off()
-    sleep(0.5)
+    for pid in ['pow', 'osc', 'spd']:
+      self.pins[pid].on()
+    sleep(0.2)
 
   def __enter__(self):
-    self.pins.pow.on()
-    self.pins.osc.on()
-    self.pins.spd.on()
+    for pid in ['pow', 'osc', 'spd']:
+      self.pins[pid].on()
     sleep(0.1)
     self.pins.vcc.on()
-    sleep(0.5)
+    sleep(0.2)
 
   def trigger(self, pin):
     with self:
       pin.off()
-      sleep(0.5)
+      sleep(0.4)
       pin.on()
 
   def verify_trigger(self):
@@ -122,15 +118,9 @@ class IrRemote:
       self.trigger(self.pins.spd)
     self.state.speed = target
 
-  def shut_down(self):
-    self.pins.pow.on()
-    self.pins.osc.on()
-    self.pins.spd.on()
-    self.pins.vcc.on()
-    self.pins.pow.close()
-    self.pins.osc.close()
-    self.pins.spd.close()
-    self.pins.vcc.close()
+  def __del__(self):
+    for pid, pin in self.pins.items():
+      pin.close()
 
 
 class TristarFan(AsyncAccessory):
@@ -145,13 +135,22 @@ class TristarFan(AsyncAccessory):
       model='pw.noop.hap.tristar_ir',
       serial_number='42-AC-TRISTARIR')
 
-    serv_fan = self.add_preload_service('Fanv2', chars=['Active', 'SwingMode', 'RotationSpeed'])
+    fan = self.add_preload_service('Fanv2', chars=[
+      'Active',
+      'SwingMode',
+      'RotationSpeed',
+      'CurrentFanState',
+      'RotationDirection',
+    ])
 
-    self.char_active = serv_fan.configure_char('Active', setter_callback=self.toggle_power, value=0)
-    self.char_swing = serv_fan.configure_char('SwingMode', setter_callback=self.toggle_swing, value=0)
-    self.char_speed = serv_fan.configure_char('RotationSpeed', setter_callback=self.toggle_speed, value=20)
+    self.props = AttrDict(
+      active=fan.configure_char('Active', setter_callback=self.toggle_power),
+      swing=fan.configure_char('SwingMode', setter_callback=self.toggle_swing),
+      speed=fan.configure_char('RotationSpeed', setter_callback=self.toggle_speed),
+      fan_state=fan.configure_char('CurrentFanState'),
+      fan_rotation_dir=fan.configure_char('RotationDirection', value=0))
 
-    self.remote = IrRemote()
+    self.remote = IrRemote(self.props)
 
   def toggle_power(self, value):
     self.remote.power(ActiveState.from_value(value))
@@ -161,3 +160,7 @@ class TristarFan(AsyncAccessory):
 
   def toggle_speed(self, value):
     self.remote.speed(FanSpeed.from_value(value))
+
+  @AsyncAccessory.run_at_interval(5)
+  async def run(self):
+    self.props.fan_state.set_value(self.remote.state.active == ActiveState.on)
