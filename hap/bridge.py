@@ -2,7 +2,7 @@ import logging
 
 from pyhap.accessory import Bridge
 
-from accessories import BMP180Sensor, LEDStrands, TristarFan, ARPOccupancySensor
+from .accessories import BMP180Sensor, LEDStrands, TristarFan, ARPOccupancySensor
 
 logging.basicConfig(level=logging.INFO)
 
