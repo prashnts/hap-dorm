@@ -140,15 +140,13 @@ class TristarFan(AsyncAccessory):
       'SwingMode',
       'RotationSpeed',
       'CurrentFanState',
-      'RotationDirection',
     ])
 
     self.props = AttrDict(
       active=fan.configure_char('Active', setter_callback=self.toggle_power),
       swing=fan.configure_char('SwingMode', setter_callback=self.toggle_swing),
       speed=fan.configure_char('RotationSpeed', setter_callback=self.toggle_speed),
-      fan_state=fan.configure_char('CurrentFanState'),
-      fan_rotation_dir=fan.configure_char('RotationDirection', value=0))
+      fan_state=fan.configure_char('CurrentFanState'))
 
     self.remote = IrRemote(self.props)
 
