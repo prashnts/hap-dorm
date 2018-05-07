@@ -161,4 +161,4 @@ class TristarFan(AsyncAccessory):
 
   @AsyncAccessory.run_at_interval(5)
   async def run(self):
-    self.props.fan_state.set_value(self.remote.state.active == ActiveState.on)
+    self.props.fan_state.set_value(2 if self.remote.state.active == ActiveState.on else 1)
