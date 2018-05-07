@@ -83,6 +83,7 @@ class IrRemote:
     self.pins.pow.off()
     self.pins.osc.off()
     self.pins.spd.off()
+    sleep(0.5)
 
   def __enter__(self):
     self.pins.pow.on()
@@ -90,6 +91,7 @@ class IrRemote:
     self.pins.spd.on()
     sleep(0.1)
     self.pins.vcc.on()
+    sleep(0.5)
 
   def trigger(self, pin):
     with self:
@@ -117,7 +119,7 @@ class IrRemote:
     if self.state.power != ActiveState.on:
       return
     for i in range(self.state.speed >> target):
-      self.trigger(self.pins.speed)
+      self.trigger(self.pins.spd)
     self.state.speed = target
 
   def shut_down(self):
