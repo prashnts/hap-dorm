@@ -65,7 +65,7 @@ class IrRemote:
     if props:
       self.state.power = ActiveState.from_value(props.active.value)
       self.state.swing = ActiveState.from_value(props.swing.value)
-      self.state.speed = ActiveState.from_value(props.speed.value)
+      self.state.speed = FanSpeed.from_value(props.speed.value)
 
   def _setup_pins(self):
     pin_map = config.fan_remote.pin_map
