@@ -77,7 +77,7 @@ class IrRemote:
     pins.spd = gpio_pin(PIN_MAP.SPD)
     self.pins = pins
 
-  def __exit__(self, *args, *kwargs):
+  def __exit__(self, *args, **kwargs):
     self.pins.vcc.off()
     sleep(0.1)
     self.pins.pow.off()
