@@ -33,14 +33,29 @@ class LEDStrands(AsyncAccessory):
       model='pw.noop.hap.ws2812',
       serial_number='42-AC-WS2812')
 
-    serv_strands = self.add_preload_service('Lightbulb', ['On', 'Hue', 'Saturation', 'Brightness',])
+    strands = self.add_preload_service('Lightbulb', chars=[
+      'On',
+      'Hue',
+      'Saturation',
+      'Brightness',
+    ])
 
-    self.maybe_put_hue = py_.debounce(self.put_hue, 500)
+    self.props = AttrDict(
+      active=strands.configure_char('On', setter_callback=self.set_prop('active')),
+      hue=strands.configure_char('Hue', setter_callback=self.set_prop('hue')),
+      saturation=strands.configure_char('Saturation', setter_callback=self.set_prop('saturation')),
+      brightness=strands.configure_char('Brightness', setter_callback=self.set_prop('brightness')))
 
-    self.char_state = serv_strands.configure_char('On', setter_callback=self.update_color)
-    self.char_hue = serv_strands.configure_char('Hue', setter_callback=self.update_color, value=0)
-    self.char_saturation = serv_strands.configure_char('Saturation', setter_callback=self.update_color, value=0)
-    self.char_brightness = serv_strands.configure_char('Brightness', setter_callback=self.update_color, value=0)
+    self.state = AttrDict(
+      hue=self.props.hue.value,
+      saturation=self.props.saturation.value,
+      brightness=self.props.brightness.value,
+      active=self.props.active.value)
+
+  def set_prop(self, prop):
+    def update_prop(self, value):
+      self.state[prop] = value
+    return update_prop
 
   def set_state(self, state):
     if state:
@@ -48,23 +63,23 @@ class LEDStrands(AsyncAccessory):
     else:
       self.put_hue(config.colors.off)
 
-  def update_color(self, value):
-    h = self.char_hue.value
-    s = self.char_saturation.value / 100
-    v = self.char_brightness.value / 100 if self.char_state.value else 0
+  def update_color(self):
+    h = self.props.hue
+    s = self.props.saturation / 100
+    v = self.props.brightness / 100 if self.props.active else 0
 
     col = Color(hsv=(h, s, v))
     logging.info(col.hex)
-    self.maybe_put_hue(col.hex.strip('#'))
+    self.put_hue(col.hex.strip('#'))
 
   def _put_pixel_hue(self, pixels):
     headers = {'ld{}'.format(i): c for i, c in pixels}
     requests.put(config.endpoint, headers=headers)
 
-  def _put_brightness(self, value):
-    headers = {config.proto.brightness_prefix: str(value)}
-    requests.put(config.endpoint, headers=headers)
-
   def put_hue(self, hue):
     payload = [(i, hue) for i in range(config.pixels.count)]
     self._put_pixel_hue(payload)
+
+  @AsyncAccessory.run_at_interval(4)
+  async def run(self):
+    self.update_color()
