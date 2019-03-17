@@ -1,6 +1,3 @@
-from .bmp_180_sensor import BMP180Sensor
-from .strands import LEDStrands
-from .tristar_remote import TristarFan
-from .arp_devices import ARPOccupancySensor
+from .bmp_180_sensor import TemperatureSensor, HumiditySensor
 
-__all__ = ('BMP180Sensor', 'LEDStrands', 'TristarFan', 'ARPOccupancySensor',)
+__all__ = ('TemperatureSensor', 'HumiditySensor',)
