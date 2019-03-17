@@ -48,15 +48,15 @@ class LEDStrands(AsyncAccessory):
 
     self.state = AttrDict(
       changed=True,
-      hue=self.props.hue.value,
-      saturation=self.props.saturation.value,
-      brightness=self.props.brightness.value,
-      active=self.props.active.value)
+      hue=0,
+      saturation=0,
+      brightness=0,
+      active=0)
 
   def set_prop(self, prop):
-    def update_prop(value):
+    def update_prop(value, prop=prop):
       self.state.changed = True
-      self.state[prop] = value
+      setattr(self.state, prop, value)
     return update_prop
 
   def set_state(self, state):
@@ -66,9 +66,9 @@ class LEDStrands(AsyncAccessory):
       self.put_hue(config.colors.off)
 
   def update_color(self):
-    h = self.props.hue
-    s = self.props.saturation / 100
-    v = self.props.brightness / 100 if self.props.active else 0
+    h = self.state.hue
+    s = self.state.saturation / 100
+    v = self.state.brightness / 100 if self.state.active else 0
 
     col = Color(hsv=(h, s, v))
     logging.info(col.hex)
@@ -84,6 +84,7 @@ class LEDStrands(AsyncAccessory):
 
   @AsyncAccessory.run_at_interval(4)
   async def run(self):
+    logging.info(str(self.state))
     if self.state.changed:
       self.state.changed = False
       self.update_color()

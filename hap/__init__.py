@@ -1,4 +1,4 @@
-from ._config import config
+from ._config import config, huey, walrus
 
 
-__all__ = ('config',)
+__all__ = ('config', 'huey', 'walrus')
