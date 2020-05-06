@@ -1,11 +1,27 @@
+from loguru import logger
 from pyhap.accessory import Accessory
 from pyhap.const import CATEGORY_SENSOR
 
-from bme280 import bme280
+try:
+  from bme280 import bme280
 
-bme280.bme280_i2c.set_default_i2c_address(0x76)
-bme280.bme280_i2c.set_default_bus(1)
-bme280.setup()
+  bme280.bme280_i2c.set_default_i2c_address(0x76)
+  bme280.bme280_i2c.set_default_bus(1)
+  bme280.setup()
+except ImportError:
+  logger.warn('Could not import bme280. Substituting fake device.')
+  import random
+
+  class bme280:
+    # ~25 C is ok to not make the automations start screaming.
+    # And RH can be 40%. Meh.
+    @staticmethod
+    def read_temperature():
+      return random.randint(22, 25)
+
+    @staticmethod
+    def read_humidity():
+      return random.randint(40, 50)
 
 
 class TemperatureSensor(Accessory):
