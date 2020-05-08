@@ -1,6 +1,6 @@
 from loguru import logger
 from pyhap.accessory import Accessory
-from pyhap.const import Category
+from pyhap import const
 
 try:
   from bme280 import bme280
@@ -25,7 +25,7 @@ except (ImportError, OSError):
 
 
 class TemperatureSensor(Accessory):
-  category = Category.CATEGORY_SENSOR
+  category = const.CATEGORY_SENSOR
 
   def __init__(self, *args, **kwargs):
     super().__init__(*args, **kwargs)
@@ -39,7 +39,7 @@ class TemperatureSensor(Accessory):
 
 
 class HumiditySensor(Accessory):
-  category = Category.CATEGORY_SENSOR
+  category = const.CATEGORY_SENSOR
 
   def __init__(self, *args, **kwargs):
     super().__init__(*args, **kwargs)

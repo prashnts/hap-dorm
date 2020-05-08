@@ -4,7 +4,7 @@ import logging
 
 from addict import Dict as AttrDict
 from pyhap.accessory import AsyncAccessory
-from pyhap.const import Category
+from pyhap import const
 from colorutils import Color
 from pydash import py_
 
@@ -22,7 +22,7 @@ config.endpoint = 'http://192.168.0.132/'
 
 
 class LEDStrands(AsyncAccessory):
-  category = Category.CATEGORY_LIGHTBULB
+  category = const.CATEGORY_LIGHTBULB
 
   def __init__(self, *args, **kwargs):
     super().__init__(*args, **kwargs)
