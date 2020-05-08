@@ -1,6 +1,6 @@
 from loguru import logger
 from pyhap.accessory import Accessory
-from pyhap.const import CATEGORY_SENSOR
+from pyhap.const import Category
 
 try:
   from bme280 import bme280
@@ -25,16 +25,10 @@ except ImportError:
 
 
 class TemperatureSensor(Accessory):
-  category = CATEGORY_SENSOR
+  category = Category.CATEGORY_SENSOR
 
   def __init__(self, *args, **kwargs):
     super().__init__(*args, **kwargs)
-
-    self.set_info_service(
-      firmware_revision='v1.2',
-      manufacturer='noop.pw',
-      model='pw.noop.hap.sense-temp',
-      serial_number='42-AC-S-TEMP')
 
     service = self.add_preload_service('TemperatureSensor')
     self.temperature = service.configure_char('CurrentTemperature')
@@ -45,16 +39,10 @@ class TemperatureSensor(Accessory):
 
 
 class HumiditySensor(Accessory):
-  category = CATEGORY_SENSOR
+  category = Category.CATEGORY_SENSOR
 
   def __init__(self, *args, **kwargs):
     super().__init__(*args, **kwargs)
-
-    self.set_info_service(
-      firmware_revision='v1.2',
-      manufacturer='noop.pw',
-      model='pw.noop.hap.sense-temp',
-      serial_number='42-AC-S-TEMP')
 
     service = self.add_preload_service('HumiditySensor')
     self.humidity = service.configure_char('CurrentRelativeHumidity')
