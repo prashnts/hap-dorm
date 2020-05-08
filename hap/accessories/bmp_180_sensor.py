@@ -8,7 +8,7 @@ try:
   bme280.bme280_i2c.set_default_i2c_address(0x76)
   bme280.bme280_i2c.set_default_bus(1)
   bme280.setup()
-except ImportError:
+except (ImportError, OSError):
   logger.warn('Could not import bme280. Substituting fake device.')
   import random
 
